@@ -36,7 +36,7 @@ import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
 import db from "../../../firebase/firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
-
+import { useState } from 'react';
 
 interface FireOrder {
   id: string;
@@ -53,7 +53,7 @@ async function fetchOrders(): Promise<FireOrder[]> {
   const ordersCollectionRef = collection(db, 'orders');
   const ordersSnapshot = await getDocs(ordersCollectionRef);
   
-  // Map over the documents and transform them into objects of type Order
+  // Map over the documents and transform them into objects of type FireOrder
   const rows: FireOrder[] = ordersSnapshot.docs.map((doc) => {
     const data = doc.data();
     return {
@@ -67,11 +67,8 @@ async function fetchOrders(): Promise<FireOrder[]> {
   return rows;
 }
 
-
 const rows = await fetchOrders();
 console.log(rows);
-
-
 
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T): number {
@@ -115,10 +112,7 @@ function getComparator<Key extends keyof any>(
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
-// Since 2020 all major browsers ensure sort stability with Array.prototype.sort().
-// stableSort() brings sort stability to non-modern browsers (notably IE11). If you
-// only support modern browsers you can replace stableSort(exampleArray, exampleComparator)
-// with exampleArray.slice().sort(exampleComparator)
+
 function stableSort<T>(array: readonly T[], comparator: (a: T, b: T) => number) {
   const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
   stabilizedThis.sort((a, b) => {
@@ -148,7 +142,33 @@ function RowMenu() {
         <MenuItem color="danger">Delete</MenuItem>
       </Menu>
     </Dropdown>
+    
   );
+}
+
+function StatusDropdown(){
+  const handleStatusChange = (orderId: string, newStatus: string) => {
+    console.log(newStatus);
+    setModifiedStatuses((prevStatuses) => ({
+      ...prevStatuses,
+      [orderId]: newStatus,
+    }));
+  };
+  return (
+  <Dropdown>
+      <MenuButton
+        slots={{ root: IconButton }}
+        slotProps={{ root: { variant: 'plain', color: 'neutral', size: 'sm' } }}
+      >
+        <ArrowDropDownIcon />
+      </MenuButton>
+      <Menu size="sm" sx={{ minWidth: 120 }}>
+        <MenuItem onClick={() => handleStatusChange(row.id, 'paid')}>Paid</MenuItem>
+        <MenuItem onClick={() => handleStatusChange(row.id, 'pending')}>Pending</MenuItem>
+        <MenuItem onClick={() => handleStatusChange(row.id, 'refunded')}>Refunded</MenuItem>
+        <MenuItem onClick={() => handleStatusChange(row.id, 'cancelled')}>Cancelled</MenuItem>
+      </Menu>
+    </Dropdown>)
 }
 
 export default function OrderTable() {
@@ -156,14 +176,21 @@ export default function OrderTable() {
   const [orderBy, setOrderBy] = React.useState<keyof typeof rows[0]>('id');
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [open, setOpen] = React.useState(false);
+  const [modifiedStatuses, setModifiedStatuses] = useState<{ [id: string]: string }>({});
 
   const handleRequestSort = (property: keyof typeof rows[0]) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
 
-    
-  
+  };
+
+  const handleStatusChange = (orderId: string, newStatus: string) => {
+    console.log(newStatus)
+    setModifiedStatuses((prevStatuses) => ({
+      ...prevStatuses,
+      [orderId]: newStatus,
+    }));
   };
 
   const renderFilters = () => (
@@ -174,6 +201,7 @@ export default function OrderTable() {
           size="sm"
           placeholder="Filter by status"
           slotProps={{ button: { sx: { whiteSpace: 'nowrap' } } }}
+          //onChange={(event) => handleStatusChange(row.id, event.target.value as string)}
         >
           <Option value="paid">Paid</Option>
           <Option value="pending">Pending</Option>
@@ -337,7 +365,6 @@ export default function OrderTable() {
                   underline="none"
                   color="primary"
                   component="button"
-                  /*onClick={() => setOrder(order === 'asc' ? 'desc' : 'asc')}*/
                   onClick={() => handleRequestSort('status')}
    
 
@@ -382,7 +409,19 @@ export default function OrderTable() {
           <tbody>
             {stableSort(rows, getComparator(order, orderBy)).map((row) => (
               <tr key={row.id}>
-                <td style={{ textAlign: 'center', width: 120 }}>
+                <td>
+            {/* <Select
+              size="sm"
+              value={modifiedStatuses[row.id] || row.status}
+              //onChange={(event) => handleStatusChange(row.id, event.target.value as string)}
+            >
+              <Option value="paid">Paid</Option>
+              <Option value="pending">Pending</Option>
+              <Option value="refunded">Refunded</Option>
+              <Option value="cancelled">Cancelled</Option>
+            </Select> */}
+          </td>
+                {/* <td style={{ textAlign: 'center', width: 120 }}>
                   <Checkbox
                     size="sm"
                     checked={selected.includes(row.id)}
@@ -397,7 +436,7 @@ export default function OrderTable() {
                     slotProps={{ checkbox: { sx: { textAlign: 'left' } } }}
                     sx={{ verticalAlign: 'text-bottom' }}
                   />
-                </td>
+                </td> */}
                 <td>
                   <Typography level="body-xs">{row.id}</Typography>
                 </td>
@@ -494,3 +533,5 @@ export default function OrderTable() {
     </React.Fragment>
   );
 }
+
+

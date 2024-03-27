@@ -24,3 +24,4 @@ dist-ssr
 *.sw?
 
 src/makefile
+src/firebase/abrico-test-firebase-adminsdk-fkqyv-037991a628.json

@@ -26,8 +26,9 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 
 import db from "../../../firebase/firebaseConfig";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { useState } from 'react';
+import Select from '@mui/joy/Select';
 
 interface FireOrder {
   id: string;
@@ -62,27 +63,104 @@ async function fetchOrders(): Promise<FireOrder[]> {
 const listItems = await fetchOrders();
 console.log(listItems);
 
-function RowMenu() {
+async function updateOrderStatus(orderId: string, newStatus: string) {
+  const orderRef = doc(db, 'orders', orderId);
+  await updateDoc(orderRef, {
+    status: newStatus
+  });
+}
+
+// function RowMenu() {
+//   return (
+//     <Dropdown>
+//       <MenuButton
+//         slots={{ root: IconButton }}
+//         slotProps={{ root: { variant: 'plain', color: 'neutral', size: 'sm' } }}
+//       >
+//         <MoreHorizRoundedIcon />
+//       </MenuButton>
+//       <Menu size="sm" sx={{ minWidth: 140 }}>
+//         <MenuItem>Edit</MenuItem>
+//         <MenuItem>Rename</MenuItem>
+//         <MenuItem>Move</MenuItem>
+//         <Divider />
+//         <MenuItem color="danger">Delete</MenuItem>
+//       </Menu>
+//     </Dropdown>
+//   );
+// }
+
+function RowMenu({ orderId, currentStatus, onUpdateStatus }: { orderId: string, currentStatus: string, onUpdateStatus: (newStatus: string) => void }) {
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [newStatus, setNewStatus] = React.useState(currentStatus);
+
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleStatusChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setNewStatus(event.target.value as string); // Update the new status when the user selects from the dropdown
+  };
+
+  const handleSave = () => {
+    onUpdateStatus(newStatus); // Call the parent component function to update the status
+    handleClose(); // Close the menu
+  };
+
   return (
-    <Dropdown>
-      <MenuButton
-        slots={{ root: IconButton }}
-        slotProps={{ root: { variant: 'plain', color: 'neutral', size: 'sm' } }}
+    <div>
+      <IconButton
+        aria-controls="row-menu"
+        aria-haspopup="true"
+        onClick={handleClick}
       >
-        <MoreHorizRoundedIcon />
-      </MenuButton>
-      <Menu size="sm" sx={{ minWidth: 140 }}>
-        <MenuItem>Edit</MenuItem>
+      
+        <MoreHorizRoundedIcon />  
+      </IconButton>
+
+      <Menu
+        id="row-menu"
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+      >
+        <MenuItem onClick={handleClose}>Edit</MenuItem>
         <MenuItem>Rename</MenuItem>
         <MenuItem>Move</MenuItem>
-        <Divider />
-        <MenuItem color="danger">Delete</MenuItem>
+        <Select
+            value={newStatus}
+            onChange={handleStatusChange}
+            onClose={handleSave} // Call handleSave when the Select dropdown closes
+          >
+        <MenuItem onClick={() => onUpdateStatus("pending")}>Set to Pending</MenuItem>
+        <MenuItem onClick={() => onUpdateStatus("paid")}>Set to Paid</MenuItem>
+        <MenuItem onClick={() => onUpdateStatus("refunded")}>Set to Refunded</MenuItem>
+        <MenuItem onClick={() => onUpdateStatus("cancelled")}>Set to Cancelled</MenuItem>
+        </Select>
       </Menu>
-    </Dropdown>
+    </div>
   );
 }
 
+
 export default function OrderList() {
+  const [orders, setOrders] = useState<FireOrder[]>(listItems);
+
+  const handleUpdateStatus = async (orderId: string, newStatus: string) => {
+    await updateOrderStatus(orderId, newStatus);
+    const updatedOrders = orders.map(order => {
+      if (order.id === orderId) {
+        return { ...order, status: newStatus };
+      }
+      return order;
+    });
+    setOrders(updatedOrders);
+  };
+
   return (
     <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
       {listItems.map((listItem) => (
@@ -128,7 +206,11 @@ export default function OrderList() {
                   <Link level="body-sm" component="button">
                     Download
                   </Link>
-                  <RowMenu />
+                  <RowMenu
+                    orderId={listItem.id}
+                    currentStatus={listItem.status}
+                    onUpdateStatus={status => handleUpdateStatus(listItem.id, status)}
+                  />
                 </Box>
               </div>
             </ListItemContent>

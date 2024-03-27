@@ -385,6 +385,7 @@ export default function OrderTable() {
                 >
                   Status
                 </Link>
+                
               </th>
               <th style={{ width: 120, padding: '12px 6px' }}>
                 <Link
@@ -414,12 +415,7 @@ export default function OrderTable() {
           <tbody>
             {stableSort(rows, getComparator(order, orderBy)).map((row) => (
               <tr key={row.id}>
-                <td>
-                <StatusDropdown 
-                  currentStatus={modifiedStatuses[row.id] || row.status}
-              orderId={row.id} 
-              handleStatusChange={handleStatusChange} 
-      />
+                
             {/* <Select
               size="sm"
               value={modifiedStatuses[row.id] || row.status}
@@ -430,7 +426,7 @@ export default function OrderTable() {
               <Option value="refunded">Refunded</Option>
               <Option value="cancelled">Cancelled</Option>
             </Select> */}
-          </td>
+          
                 {/* <td style={{ textAlign: 'center', width: 120 }}>
                   <Checkbox
                     size="sm"
@@ -453,6 +449,7 @@ export default function OrderTable() {
                 <td>
                   <Typography level="body-xs">{row.date}</Typography>
                 </td>
+                
                 <td>
                   <Chip
                     variant="soft"
@@ -475,6 +472,12 @@ export default function OrderTable() {
                     {row.status}
                   </Chip>
                 </td>
+                <td>
+                <StatusDropdown 
+                  currentStatus={modifiedStatuses[row.id] || row.status}
+              orderId={row.id} 
+              handleStatusChange={handleStatusChange} 
+      /></td>
                 <td>
                   <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                     <Avatar size="sm">{row.customer.initial}</Avatar>

@@ -25,68 +25,42 @@ import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 
-const listItems = [
-  {
-    id: 'INV-1234',
-    date: 'Feb 3, 2023',
-    status: 'Refunded',
-    customer: {
-      initial: 'O',
-      name: 'Olivia Ryhe',
-      email: 'olivia@email.com',
-    },
-  },
-  {
-    id: 'INV-1233',
-    date: 'Feb 3, 2023',
-    status: 'Paid',
-    customer: {
-      initial: 'S',
-      name: 'Steve Hampton',
-      email: 'steve.hamp@email.com',
-    },
-  },
-  {
-    id: 'INV-1232',
-    date: 'Feb 3, 2023',
-    status: 'Refunded',
-    customer: {
-      initial: 'C',
-      name: 'Ciaran Murray',
-      email: 'ciaran.murray@email.com',
-    },
-  },
-  {
-    id: 'INV-1231',
-    date: 'Feb 3, 2023',
-    status: 'Refunded',
-    customer: {
-      initial: 'M',
-      name: 'Maria Macdonald',
-      email: 'maria.mc@email.com',
-    },
-  },
-  {
-    id: 'INV-1230',
-    date: 'Feb 3, 2023',
-    status: 'Cancelled',
-    customer: {
-      initial: 'C',
-      name: 'Charles Fulton',
-      email: 'fulton@email.com',
-    },
-  },
-  {
-    id: 'INV-1229',
-    date: 'Feb 3, 2023',
-    status: 'Cancelled',
-    customer: {
-      initial: 'J',
-      name: 'Jay Hooper',
-      email: 'hooper@email.com',
-    },
-  },
-];
+import db from "../../../firebase/firebaseConfig";
+import { collection, getDocs } from "firebase/firestore";
+import { useState } from 'react';
+
+interface FireOrder {
+  id: string;
+  date: string;
+  status: string;
+  // customer: string;
+  customer: {
+    initial: string;
+    name: string;
+    email: string;
+  };
+}
+
+async function fetchOrders(): Promise<FireOrder[]> {
+  const ordersCollectionRef = collection(db, 'orders');
+  const ordersSnapshot = await getDocs(ordersCollectionRef);
+  
+  // Map over the documents and transform them into objects of type FireOrder
+  const listItems: FireOrder[] = ordersSnapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      date: data.date,
+      status: data.status,
+      customer: data.customer
+    };
+  });
+
+  return listItems;
+}
+
+const listItems = await fetchOrders();
+console.log(listItems);
 
 function RowMenu() {
   return (

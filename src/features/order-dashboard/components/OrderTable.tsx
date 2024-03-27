@@ -70,6 +70,28 @@ async function fetchOrders(): Promise<FireOrder[]> {
 const rows = await fetchOrders();
 console.log(rows);
 
+function StatusDropdown({ orderId, handleStatusChange }) {
+  const handleChange = (newStatus) => {
+    handleStatusChange(orderId, newStatus);
+  };
+
+  return (
+    <Dropdown>
+      <MenuButton
+        slots={{ root: IconButton }}
+        slotProps={{ root: { variant: 'plain', color: 'neutral', size: 'sm' } }}
+      >
+        <ArrowDropDownIcon />
+      </MenuButton>
+      <Menu size="sm" sx={{ minWidth: 120 }}>
+        <MenuItem onClick={() => handleChange('paid')}>Paid</MenuItem>
+        <MenuItem onClick={() => handleChange('pending')}>Pending</MenuItem>
+        <MenuItem onClick={() => handleChange('refunded')}>Refunded</MenuItem>
+        <MenuItem onClick={() => handleChange('cancelled')}>Cancelled</MenuItem>
+      </Menu>
+    </Dropdown>
+  );
+}
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T): number {
   if (orderBy === 'customer') {
@@ -146,30 +168,7 @@ function RowMenu() {
   );
 }
 
-function StatusDropdown(){
-  const handleStatusChange = (orderId: string, newStatus: string) => {
-    console.log(newStatus);
-    setModifiedStatuses((prevStatuses) => ({
-      ...prevStatuses,
-      [orderId]: newStatus,
-    }));
-  };
-  return (
-  <Dropdown>
-      <MenuButton
-        slots={{ root: IconButton }}
-        slotProps={{ root: { variant: 'plain', color: 'neutral', size: 'sm' } }}
-      >
-        <ArrowDropDownIcon />
-      </MenuButton>
-      <Menu size="sm" sx={{ minWidth: 120 }}>
-        <MenuItem onClick={() => handleStatusChange(row.id, 'paid')}>Paid</MenuItem>
-        <MenuItem onClick={() => handleStatusChange(row.id, 'pending')}>Pending</MenuItem>
-        <MenuItem onClick={() => handleStatusChange(row.id, 'refunded')}>Refunded</MenuItem>
-        <MenuItem onClick={() => handleStatusChange(row.id, 'cancelled')}>Cancelled</MenuItem>
-      </Menu>
-    </Dropdown>)
-}
+
 
 export default function OrderTable() {
   const [order, setOrder] = React.useState<Order>('desc');
@@ -410,6 +409,7 @@ export default function OrderTable() {
             {stableSort(rows, getComparator(order, orderBy)).map((row) => (
               <tr key={row.id}>
                 <td>
+                <StatusDropdown orderId={row.id} handleStatusChange={handleStatusChange} />
             {/* <Select
               size="sm"
               value={modifiedStatuses[row.id] || row.status}

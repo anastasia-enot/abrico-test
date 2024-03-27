@@ -76,28 +76,61 @@ interface StatusDropdownProps {
   handleStatusChange: (orderId: string, newStatus: string) => void;
 }
 
-function StatusDropdown({ currentStatus, orderId, handleStatusChange }: StatusDropdownProps) {
+// function StatusDropdown({ currentStatus, orderId, handleStatusChange }: StatusDropdownProps) {
+//   const handleChange = (newStatus) => {
+//     handleStatusChange(orderId, newStatus);
+//   };
+
+//   return (
+//     <Dropdown>
+//       <MenuButton
+//         slots={{ root: IconButton }}
+//         slotProps={{ root: { variant: 'plain', color: 'neutral', size: 'sm' } }}
+//       >
+//         <ArrowDropDownIcon />
+//       </MenuButton>
+//       <Menu size="sm" sx={{ minWidth: 120 }}>
+//         <MenuItem onClick={() => handleChange('paid')} selected={currentStatus === 'paid'}>Paid</MenuItem>
+//         <MenuItem onClick={() => handleChange('pending')} selected={currentStatus === 'pending'}>Pending</MenuItem>
+//         <MenuItem onClick={() => handleChange('refunded')} selected={currentStatus === 'refunded'}>Refunded</MenuItem>
+//         <MenuItem onClick={() => handleChange('cancelled')} selected={currentStatus === 'cancelled'}>Cancelled</MenuItem>
+//       </Menu>
+//     </Dropdown>
+//   );
+// }
+
+
+function StatusDropdown({ currentStatus, orderId, handleStatusChange }) {
   const handleChange = (newStatus) => {
     handleStatusChange(orderId, newStatus);
   };
 
+  const statusIcons = {
+    Paid: <CheckRoundedIcon />,
+    Refunded: <AutorenewRoundedIcon />,
+    Cancelled: <BlockIcon />,
+  };
+
   return (
-    <Dropdown>
-      <MenuButton
-        slots={{ root: IconButton }}
-        slotProps={{ root: { variant: 'plain', color: 'neutral', size: 'sm' } }}
-      >
-        <ArrowDropDownIcon />
-      </MenuButton>
-      <Menu size="sm" sx={{ minWidth: 120 }}>
-        <MenuItem onClick={() => handleChange('paid')} selected={currentStatus === 'paid'}>Paid</MenuItem>
-        <MenuItem onClick={() => handleChange('pending')} selected={currentStatus === 'pending'}>Pending</MenuItem>
-        <MenuItem onClick={() => handleChange('refunded')} selected={currentStatus === 'refunded'}>Refunded</MenuItem>
-        <MenuItem onClick={() => handleChange('cancelled')} selected={currentStatus === 'cancelled'}>Cancelled</MenuItem>
-      </Menu>
-    </Dropdown>
+    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      <Chip
+        variant="soft"
+        size="small"
+        startIcon={statusIcons[currentStatus]}
+        color={currentStatus === 'Paid' ? 'success' : currentStatus === 'Refunded' ? 'neutral' : 'danger'}
+        label={currentStatus}
+      />
+      <ArrowDropDownIcon />
+      <select value={currentStatus} onChange={(e) => handleChange(e.target.value)}>
+        <option value="Paid">Paid</option>
+        <option value="Pending">Pending</option>
+        <option value="Refunded">Refunded</option>
+        <option value="Cancelled">Cancelled</option>
+      </select>
+    </Box>
   );
 }
+
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T): number {
   if (orderBy === 'customer') {
@@ -416,33 +449,16 @@ export default function OrderTable() {
             {stableSort(rows, getComparator(order, orderBy)).map((row) => (
               <tr key={row.id}>
                 
-            {/* <Select
-              size="sm"
-              value={modifiedStatuses[row.id] || row.status}
-              //onChange={(event) => handleStatusChange(row.id, event.target.value as string)}
-            >
-              <Option value="paid">Paid</Option>
-              <Option value="pending">Pending</Option>
-              <Option value="refunded">Refunded</Option>
-              <Option value="cancelled">Cancelled</Option>
-            </Select> */}
-          
-                {/* <td style={{ textAlign: 'center', width: 120 }}>
-                  <Checkbox
-                    size="sm"
-                    checked={selected.includes(row.id)}
-                    color={selected.includes(row.id) ? 'primary' : undefined}
-                    onChange={(event) => {
-                      setSelected((ids) =>
-                        event.target.checked
-                          ? ids.concat(row.id)
-                          : ids.filter((itemId) => itemId !== row.id),
-                      );
-                    }}
-                    slotProps={{ checkbox: { sx: { textAlign: 'left' } } }}
-                    sx={{ verticalAlign: 'text-bottom' }}
-                  />
-                </td> */}
+                <td>
+        <Checkbox
+          checked={selected.includes(row.id)}
+          onChange={(event) => {
+            const isChecked = event.target.checked;
+            setSelected(isChecked ? [...selected, row.id] : selected.filter((id) => id !== row.id));
+          }}
+          color="primary"
+        />
+      </td>
                 <td>
                   <Typography level="body-xs">{row.id}</Typography>
                 </td>
@@ -450,7 +466,7 @@ export default function OrderTable() {
                   <Typography level="body-xs">{row.date}</Typography>
                 </td>
                 
-                <td>
+                {/* <td>
                   <Chip
                     variant="soft"
                     size="sm"
@@ -471,7 +487,7 @@ export default function OrderTable() {
                   >
                     {row.status}
                   </Chip>
-                </td>
+                </td> */}
                 <td>
                 <StatusDropdown 
                   currentStatus={modifiedStatuses[row.id] || row.status}

@@ -70,7 +70,13 @@ async function fetchOrders(): Promise<FireOrder[]> {
 const rows = await fetchOrders();
 console.log(rows);
 
-function StatusDropdown({ orderId, handleStatusChange }) {
+interface StatusDropdownProps {
+  currentStatus: string;
+  orderId: string;
+  handleStatusChange: (orderId: string, newStatus: string) => void;
+}
+
+function StatusDropdown({ currentStatus, orderId, handleStatusChange }: StatusDropdownProps) {
   const handleChange = (newStatus) => {
     handleStatusChange(orderId, newStatus);
   };
@@ -84,10 +90,10 @@ function StatusDropdown({ orderId, handleStatusChange }) {
         <ArrowDropDownIcon />
       </MenuButton>
       <Menu size="sm" sx={{ minWidth: 120 }}>
-        <MenuItem onClick={() => handleChange('paid')}>Paid</MenuItem>
-        <MenuItem onClick={() => handleChange('pending')}>Pending</MenuItem>
-        <MenuItem onClick={() => handleChange('refunded')}>Refunded</MenuItem>
-        <MenuItem onClick={() => handleChange('cancelled')}>Cancelled</MenuItem>
+        <MenuItem onClick={() => handleChange('paid')} selected={currentStatus === 'paid'}>Paid</MenuItem>
+        <MenuItem onClick={() => handleChange('pending')} selected={currentStatus === 'pending'}>Pending</MenuItem>
+        <MenuItem onClick={() => handleChange('refunded')} selected={currentStatus === 'refunded'}>Refunded</MenuItem>
+        <MenuItem onClick={() => handleChange('cancelled')} selected={currentStatus === 'cancelled'}>Cancelled</MenuItem>
       </Menu>
     </Dropdown>
   );
@@ -409,7 +415,11 @@ export default function OrderTable() {
             {stableSort(rows, getComparator(order, orderBy)).map((row) => (
               <tr key={row.id}>
                 <td>
-                <StatusDropdown orderId={row.id} handleStatusChange={handleStatusChange} />
+                <StatusDropdown 
+                  currentStatus={modifiedStatuses[row.id] || row.status}
+              orderId={row.id} 
+              handleStatusChange={handleStatusChange} 
+      />
             {/* <Select
               size="sm"
               value={modifiedStatuses[row.id] || row.status}

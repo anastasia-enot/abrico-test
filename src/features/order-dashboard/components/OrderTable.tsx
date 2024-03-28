@@ -35,8 +35,9 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
 import db from "../../../firebase/firebaseConfig";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
 import { useState } from 'react';
+
 
 interface FireOrder {
   id: string;
@@ -70,38 +71,21 @@ async function fetchOrders(): Promise<FireOrder[]> {
 const rows = await fetchOrders();
 console.log(rows);
 
+async function updateOrderStatus(orderId: string, newStatus: string) {
+  const orderRef = doc(db, 'orders', orderId);
+  await updateDoc(orderRef, { status: newStatus });
+}
+
 interface StatusDropdownProps {
   currentStatus: string;
   orderId: string;
   handleStatusChange: (orderId: string, newStatus: string) => void;
 }
 
-// function StatusDropdown({ currentStatus, orderId, handleStatusChange }: StatusDropdownProps) {
-//   const handleChange = (newStatus) => {
-//     handleStatusChange(orderId, newStatus);
-//   };
 
-//   return (
-//     <Dropdown>
-//       <MenuButton
-//         slots={{ root: IconButton }}
-//         slotProps={{ root: { variant: 'plain', color: 'neutral', size: 'sm' } }}
-//       >
-//         <ArrowDropDownIcon />
-//       </MenuButton>
-//       <Menu size="sm" sx={{ minWidth: 120 }}>
-//         <MenuItem onClick={() => handleChange('paid')} selected={currentStatus === 'paid'}>Paid</MenuItem>
-//         <MenuItem onClick={() => handleChange('pending')} selected={currentStatus === 'pending'}>Pending</MenuItem>
-//         <MenuItem onClick={() => handleChange('refunded')} selected={currentStatus === 'refunded'}>Refunded</MenuItem>
-//         <MenuItem onClick={() => handleChange('cancelled')} selected={currentStatus === 'cancelled'}>Cancelled</MenuItem>
-//       </Menu>
-//     </Dropdown>
-//   );
-// }
-
-
-function StatusDropdown({ currentStatus, orderId, handleStatusChange }) {
-  const handleChange = (newStatus) => {
+function StatusDropdown({ currentStatus, orderId, handleStatusChange }: StatusDropdownProps) {
+  const handleChange = async (newStatus: string) => {
+    await updateOrderStatus(orderId, newStatus);
     handleStatusChange(orderId, newStatus);
   };
 

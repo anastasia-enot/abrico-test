@@ -116,6 +116,7 @@ function StatusDropdown({ currentStatus, orderId, handleStatusChange }: StatusDr
 }
 
 
+
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T): number {
   if (orderBy === 'customer') {
     // For 'customer' property, extract the 'initial' property for comparison
@@ -213,6 +214,11 @@ export default function OrderTable() {
       ...prevStatuses,
       [orderId]: newStatus,
     }));
+  };
+
+  const handleDateChange = async (orderId: string, newDate: string) => {
+    const orderRef = doc(db, 'orders', orderId);
+    await updateDoc(orderRef, { date: newDate });
   };
 
   const renderFilters = () => (
@@ -446,32 +452,21 @@ export default function OrderTable() {
                 <td>
                   <Typography level="body-xs">{row.id}</Typography>
                 </td>
-                <td>
-                  <Typography level="body-xs">{row.date}</Typography>
-                </td>
-                
-                {/* <td>
-                  <Chip
-                    variant="soft"
-                    size="sm"
-                    startDecorator={
-                      {
-                        Paid: <CheckRoundedIcon />,
-                        Refunded: <AutorenewRoundedIcon />,
-                        Cancelled: <BlockIcon />,
-                      }[row.status]
-                    }
-                    color={
-                      {
-                        Paid: 'success',
-                        Refunded: 'neutral',
-                        Cancelled: 'danger',
-                      }[row.status] as ColorPaletteProp
-                    }
-                  >
-                    {row.status}
-                  </Chip>
+                {/* <td> */}
+                  {/* <Typography level="body-xs">{row.date}</Typography>
                 </td> */}
+
+<td>
+              <Typography
+                contentEditable
+                suppressContentEditableWarning
+                onBlur={(e) => handleDateChange(row.id, e.target.innerText)}
+              >
+                {row.date}
+              </Typography>
+            </td>
+                
+               
                 <td>
                 <StatusDropdown 
                   currentStatus={modifiedStatuses[row.id] || row.status}

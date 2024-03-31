@@ -1,30 +1,27 @@
-# React + TypeScript + Vite
+# Test Abrico - Web development -- Order dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Front**
 
-Currently, two official plugins are available:
+- **permet à l’utilisateur de filtrer par numéro d’invoice, statut et client**
+    - Modification dans Ordertable : La fonction *descendingComparator* doit maintenant prendre en compte le client en prenant ses initiales. Ajout de *handleRequestSort* pour identifier quelle colonne doit changer lorsque l'utilisateur appuie.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+**Back**  
 
-## Expanding the ESLint configuration
+- **Utilise firestore comme DB**
+    - Téléchargement des fichiers via Python.
+    - Connexion de Firestore avec le fichier de configuration Firestore.
+    - Transformation des données en un tableau d'objets avec une interface **`FireOrder`** et la fonction **`fetchOrders`** pour récupérer les objets depuis Firebase et les parser.
+- **Migre les données de la table d’orders sur Firestore**
+    - *updateOrderStatus + handleDateChange*
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+**Front & Back**
 
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
-
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+- **Permet à l’utilisation de modifier**
+    - de la date : *handleStatusChange + StatusDropdown function*
+    - du status : *handleDateChange + contentEditable*
+- **Que proposes-tu pour tester ton code ?**
+    - unit tests : simuler l’interaction avec l’utilisateur, vérifier que les différents composants React générent le bon output, vérifier que les fonctions produisent le bon output, tester que la connection à Firebase est bien effectuée, et que les documents sont au bon format, tester que le visuel est pareil sur les différents navigateurs.
+- **Quelles améliorations de ton code proposes tu ?**
+    - error handling
+    - annoter correctement tous les types, éviter d’utiliser Any
+    - modulariser le code : par exemple, sortir les différentes fonctions
